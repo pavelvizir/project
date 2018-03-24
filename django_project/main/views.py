@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, JsonResponse, Http404
+from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from django.template import RequestContext, loader
+from django.urls import reverse
+
 
 from .models import *
 
@@ -21,6 +23,26 @@ def detail(request, document_id):
     except Document.DoesNotExist:
         raise Http404("Document does not exist!")
     return render(request, 'polls/detail.html', {'document': document})
+
+
+# def add_document(request):
+#     document = Document
+#     try:
+#         selected_choice = document(pk=request.POST['choice'])
+#     except (KeyError, Choice.DoesNotExist):
+#         # Redisplay the question voting form.
+#         return render(request, 'polls/detail.html', {
+#             'document': document,
+#             'error_message': "You didn't select a choice.",
+#         })
+#     else:
+#         selected_choice.votes += 1
+#         selected_choice.save()
+#         # Always return an HttpResponseRedirect after successfully dealing
+#         # with POST data. This prevents data from being posted twice if a
+#         # user hits the Back button.
+#         return HttpResponseRedirect(reverse('polls:results', args=(document.id,)))
+
 
 
 # def detail(request, document_id):
