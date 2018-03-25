@@ -8,7 +8,7 @@
 	совмещены очередь и парсер;
 	таблица raw_data заменяется на data_providers.
 
-Новая схема:
+Новая схема - https://github.com/pavelvizir/project/blob/new_data_provider/doc/%D1%81%D1%85%D0%B5%D0%BC%D0%B0_1.01.png
 
 Создана ветка "new_data_provider". 
 В ней 2 модуля:
