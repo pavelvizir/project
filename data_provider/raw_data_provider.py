@@ -24,21 +24,51 @@ def fetch_emails(
         ''' fetches and parses up to "mail_batch_limit" new emails '''
 
         result = list()
+        print(uids)
+        print(b','.join(uids))
+# import imaplib
+# import email
+# 
+# obj = imaplib.IMAP4_SSL('imap.gmail.com', 993)
+# obj.login('username', 'password')
+# obj.select('folder_name')
+# resp,data = obj.uid('FETCH', '1:*' , '(RFC822.HEADER)')
+# messages = [data[i][1].strip() + "\r\nSize:" + data[i][0].split()[4] + "\r\nUID:" + data[i][0].split()[2]  for i in xrange(0, len(data), 2)]
+# for msg in messages:
+#     msg_str = email.message_from_string(msg)
+#     message_id = msg_str.get('Message-ID')
 
-        for uid in uids:
-            reply, email_data = imap_server.uid('fetch', uid, '(RFC822)')
+#         for uid in uids:
+#             reply, email_data = imap_server.uid('fetch', uid, '(RFC822)')
+        reply, email_data = imap_server.uid('fetch', b','.join(uids), '(RFC822)')
 
-            if reply == 'OK':
-                raw_email = email_data[0][1]
-                print(email_data[0][0])
-                # ...(UID 10 RFC...
-                # get regexp num from here
-                result.append(raw_email)
+        if reply == 'OK':
+            print(len(email_data))
+            
+            raw_email = email_data[0][1]
+            print(email_data[0][0])
+            print(email_data[1][0])
+            print(email_data[2][0])
+            print(len(email_data[0]))
+            for i in range(10):
+                print(email_data[i][0])
+
+            # ...(UID 10 RFC...
+            # messages = [b"\r\nSize:" + email_data[i][0].split()[4] + b"\r\nUID:" + email_data[i][0].split()[2]  for i in range(0, len(email_data), 2)]
+            messages = [email_data[i][0] for i in range(0, len(email_data), 2)]
+            for msg in messages:
+                print(msg)
+#                 msg_str = email.message_from_string(msg)
+#                 message_id = msg_str.get('Message-ID')
+
+            # get regexp num from here
+            result.append(raw_email)
 
         return result
 
     imap_server = IMAP4_SSL(address, port)              # Подключаемся.
     imap_server.login(username, password)               # Логинимся.
+    # Подключаемся к INBOX
     imap_server.select(mailbox='INBOX', readonly=True)  # Пока только INBOX.
     # Readonly, чтобы не сбросить статус "Не прочитано".
 
