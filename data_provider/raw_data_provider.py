@@ -23,48 +23,58 @@ def fetch_emails(
     def fetch_and_parse(uids):
         ''' fetches and parses up to "mail_batch_limit" new emails '''
 
+        #        print(uids)
+        #        print(b','.join(uids))
+        # import imaplib
+        # import email
+        # 
+        # obj = imaplib.IMAP4_SSL('imap.gmail.com', 993)
+        # obj.login('username', 'password')
+        # obj.select('folder_name')
+        # resp,data = obj.uid('FETCH', '1:*' , '(RFC822.HEADER)')
+        # messages = [data[i][1].strip() + "\r\nSize:" + data[i][0].split()[4] + "\r\nUID:" + data[i][0].split()[2]  for i in xrange(0, len(data), 2)]
+        # for msg in messages:
+        #     msg_str = email.message_from_string(msg)
+        #     message_id = msg_str.get('Message-ID')
+
+        #         for uid in uids:
+        #             reply, email_data = imap_server.uid('fetch', uid, '(RFC822)')
+        # #   print(len(email_data))
+        
+        # #   raw_email = email_data[0][1]
+        # print(email_data[0][0])
+        # print(email_data[1][0])
+        # print(email_data[2][0])
+        # print(len(email_data[0]))
+        # for i in range(10):
+        #     print(email_data[i][0])
+
+        # ...(UID 10 RFC...
+        # messages = [b"\r\nSize:" + email_data[i][0].split()[4] + b"\r\nUID:" + email_data[i][0].split()[2]  for i in range(0, len(email_data), 2)]
+        # messages = [(lambda a: [a[0][2], a[0][4], a[1]])(email_data[i][0].split(), email_data[i][0]) for i in range(0, len(email_data), 2)]
+
         result = list()
-        print(uids)
-        print(b','.join(uids))
-# import imaplib
-# import email
-# 
-# obj = imaplib.IMAP4_SSL('imap.gmail.com', 993)
-# obj.login('username', 'password')
-# obj.select('folder_name')
-# resp,data = obj.uid('FETCH', '1:*' , '(RFC822.HEADER)')
-# messages = [data[i][1].strip() + "\r\nSize:" + data[i][0].split()[4] + "\r\nUID:" + data[i][0].split()[2]  for i in xrange(0, len(data), 2)]
-# for msg in messages:
-#     msg_str = email.message_from_string(msg)
-#     message_id = msg_str.get('Message-ID')
-
-#         for uid in uids:
-#             reply, email_data = imap_server.uid('fetch', uid, '(RFC822)')
         reply, email_data = imap_server.uid('fetch', b','.join(uids), '(RFC822)')
-
         if reply == 'OK':
-            print(len(email_data))
-            
-            raw_email = email_data[0][1]
-            print(email_data[0][0])
-            print(email_data[1][0])
-            print(email_data[2][0])
-            print(len(email_data[0]))
-            for i in range(10):
-                print(email_data[i][0])
+            for i in range(0, len(email_data), 2):
+                imap_info = email_data[i][0].split()
+                uid_email = imap_info[2]
+                len_email = imap_info[4][1:-1]
+                raw_email = email_data[i][1]
+                # bebe = [uid_email, len_email]
+                # print(bebe)
+                result.append((uid_email, len_email, raw_email))
 
-            # ...(UID 10 RFC...
-            # messages = [b"\r\nSize:" + email_data[i][0].split()[4] + b"\r\nUID:" + email_data[i][0].split()[2]  for i in range(0, len(email_data), 2)]
-            messages = [email_data[i][0] for i in range(0, len(email_data), 2)]
-            for msg in messages:
-                print(msg)
+            return result
+#            for msg in messages:
+#                print(msg)
 #                 msg_str = email.message_from_string(msg)
 #                 message_id = msg_str.get('Message-ID')
 
             # get regexp num from here
-            result.append(raw_email)
+            #            result.append(raw_email)
 
-        return result
+            #return result
 
     imap_server = IMAP4_SSL(address, port)              # Подключаемся.
     imap_server.login(username, password)               # Логинимся.
@@ -75,14 +85,14 @@ def fetch_emails(
     # Если передан UID, то читаем всё, что новее. Иначе читаем все письма.
     imap_uid_string = '{}:*'.format(uid) if uid else 'ALL'
 
-    # Получаем tuple из статуса ответа и списка uid писем.
+    # Получаем tuple из бинарных статуса ответа и строки uid писем.
     reply, data = imap_server.uid('search', None, imap_uid_string)
 
     if reply == 'OK':
-        uids_binary = data[0].split()  # Получаем строку бинарных чисел.
+        uids_binary = data[0].split()  # Получаем список бинарных чисел.
         len_uids_binary = len(uids_binary)
 
-        if len_uids_binary < 2:
+        if len_uids_binary <= 1:
             if uids_binary[0] > str(uid).encode():
                 return int(uids_binary[0].decode()
                            ), False, fetch_and_parse(uids_binary)
@@ -146,7 +156,7 @@ while True:
                 words = "[Slave]  I've checked emails. Nothing new, Master!"
             else:
                 words = "[Slave]  I've checked emails. Here is a new mail, Master!"
-                payload = p[2][0].decode()
+                payload = [p[2][0][0].decode(),p[2][0][1].decode(),p[2][0][2].decode()]
 
                 if len(p[2][1:]) > 0:
                     more_mails = (p[0], p[1], p[2][1:])

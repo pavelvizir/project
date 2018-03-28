@@ -50,7 +50,7 @@ while True:
         words = "[Master] The last UID you checked was {}.".format(payload)
     elif e[2] == 3:
         if e[4]:
-            new_email = parse_email(e[4])
+            new_email = parse_email(e[4][2])
             print("\n\tI've got the email with the following subject:\n\n\t\t{}\n".format(new_email["Subject"].upper()))
             words = "[Master] Good boy, get me more."
         else:
