@@ -20,62 +20,6 @@ def fetch_emails(
     ''' returns up to "mail_batch_limit" new emails from INBOX per run
         touches no more than "mail_total_limit" mails per multiple runs'''
 
-    def fetch_and_parse(uids):
-        ''' fetches and parses up to "mail_batch_limit" new emails '''
-
-        #        print(uids)
-        #        print(b','.join(uids))
-        # import imaplib
-        # import email
-        # 
-        # obj = imaplib.IMAP4_SSL('imap.gmail.com', 993)
-        # obj.login('username', 'password')
-        # obj.select('folder_name')
-        # resp,data = obj.uid('FETCH', '1:*' , '(RFC822.HEADER)')
-        # messages = [data[i][1].strip() + "\r\nSize:" + data[i][0].split()[4] + "\r\nUID:" + data[i][0].split()[2]  for i in xrange(0, len(data), 2)]
-        # for msg in messages:
-        #     msg_str = email.message_from_string(msg)
-        #     message_id = msg_str.get('Message-ID')
-
-        #         for uid in uids:
-        #             reply, email_data = imap_server.uid('fetch', uid, '(RFC822)')
-        # #   print(len(email_data))
-        
-        # #   raw_email = email_data[0][1]
-        # print(email_data[0][0])
-        # print(email_data[1][0])
-        # print(email_data[2][0])
-        # print(len(email_data[0]))
-        # for i in range(10):
-        #     print(email_data[i][0])
-
-        # ...(UID 10 RFC...
-        # messages = [b"\r\nSize:" + email_data[i][0].split()[4] + b"\r\nUID:" + email_data[i][0].split()[2]  for i in range(0, len(email_data), 2)]
-        # messages = [(lambda a: [a[0][2], a[0][4], a[1]])(email_data[i][0].split(), email_data[i][0]) for i in range(0, len(email_data), 2)]
-
-        result = list()
-        reply, email_data = imap_server.uid('fetch', b','.join(uids), '(RFC822)')
-        if reply == 'OK':
-            for i in range(0, len(email_data), 2):
-                imap_info = email_data[i][0].split()
-                uid_email = imap_info[2]
-                len_email = imap_info[4][1:-1]
-                raw_email = email_data[i][1]
-                # bebe = [uid_email, len_email]
-                # print(bebe)
-                result.append((uid_email, len_email, raw_email))
-
-            return result
-#            for msg in messages:
-#                print(msg)
-#                 msg_str = email.message_from_string(msg)
-#                 message_id = msg_str.get('Message-ID')
-
-            # get regexp num from here
-            #            result.append(raw_email)
-
-            #return result
-
     imap_server = IMAP4_SSL(address, port)              # Подключаемся.
     imap_server.login(username, password)               # Логинимся.
     # Подключаемся к INBOX
@@ -86,30 +30,50 @@ def fetch_emails(
     imap_uid_string = '{}:*'.format(uid) if uid else 'ALL'
 
     # Получаем tuple из бинарных статуса ответа и строки uid писем.
-    reply, data = imap_server.uid('search', None, imap_uid_string)
+    reply_numbers, data_numbers = imap_server.uid('search',
+                                                  None,
+                                                  imap_uid_string)
 
-    if reply == 'OK':
-        uids_binary = data[0].split()  # Получаем список бинарных чисел.
-        len_uids_binary = len(uids_binary)
+    if reply_numbers == 'OK':
+        uid_bin = data_numbers[0].split()  # Получаем список бинарных чисел.
+        len_uid_bin = len(uid_bin)
+        more_mails = False
+        last_uid = uid
+        result = False
 
-        if len_uids_binary <= 1:
-            if uids_binary[0] > str(uid).encode():
-                return int(uids_binary[0].decode()
-                           ), False, fetch_and_parse(uids_binary)
+        if len_uid_bin <= 1:
+            if uid_bin[0] > str(uid).encode():
+                last_uid = uid_bin[0].decode()
 
-            return uid, False, False
-        elif len_uids_binary > mail_batch_limit:
-            if len_uids_binary > mail_total_limit:
-                return int(uids_binary[-mail_total_limit:][:mail_batch_limit][-1].decode()
-                           ), True, fetch_and_parse(uids_binary[-mail_total_limit:][:mail_batch_limit])
+            return last_uid, more_mails, result
 
-            return int(uids_binary[:mail_batch_limit][-1].decode()
-                       ), True, fetch_and_parse(uids_binary[:mail_batch_limit])
-        else:
-            return int(uids_binary[-1].decode()
-                       ), False, fetch_and_parse(uids_binary)
+        elif len_uid_bin > mail_batch_limit:
+            more_mails = True
+            if len_uid_bin > mail_total_limit:
+                uid_bin = uid_bin[-mail_total_limit:]
+
+            uid_bin = uid_bin[:mail_batch_limit]
+
+        result = list()
+        reply_email, data_email = imap_server.uid('fetch',
+                                                  b','.join(uid_bin),
+                                                  '(RFC822)')
+        if reply_email == 'OK':
+            for i in range(0, len(data_email), 2):
+                imap_info = data_email[i][0].split()
+                # Это строка вида: b'id (UID xx RFC822 {byte_length} ('
+                uid_email = imap_info[2]        # UID
+                len_email = imap_info[4][1:-1]  # {byte_length}
+                raw_email = data_email[i][1]
+                result.append((uid_email, len_email, raw_email))
+
+            last_uid = uid_email.decode()
+            return last_uid, more_mails, result
+
+        return '{} returned error: {}'.format(address, reply_email)
+
     else:
-        return '{} returned error: {}'.format(address, reply)
+        return '{} returned error: {}'.format(address, reply_numbers)
 
 
 REQUEST_TIMEOUT = 2500
