@@ -76,110 +76,116 @@ def fetch_emails(
         return '{} returned error: {}'.format(address, reply_numbers)
 
 
-REQUEST_TIMEOUT = 2500
-REQUEST_RETRIES = 3
-SERVER_ENDPOINT = "tcp://localhost:5555"
+def zmq_slave():
+    ''' ZMQ '''
 
-context = zmq.Context(1)
+    REQUEST_TIMEOUT = 2500
+    REQUEST_RETRIES = 3
+    SERVER_ENDPOINT = "tcp://localhost:5555"
 
-print("[Slave]  I've come to life! Connecting to server...")
-client = context.socket(zmq.REQ)
-client.connect(SERVER_ENDPOINT)
+    context = zmq.Context(1)
 
-poll = zmq.Poller()
-poll.register(client, zmq.POLLIN)
+    print("[Slave]  I've come to life! Connecting to server...")
+    client = context.socket(zmq.REQ)
+    client.connect(SERVER_ENDPOINT)
 
-sequence = 0
-retries_left = REQUEST_RETRIES
-expect_reply = False
-phase = 0
-payload = None
-more_mails = None
-last_uid = None
+    poll = zmq.Poller()
+    poll.register(client, zmq.POLLIN)
 
-while True:
-    if not expect_reply:
-        sequence += 1
+    sequence = 0
+    retries_left = REQUEST_RETRIES
+    expect_reply = False
+    phase = 0
+    payload = None
+    more_mails = None
+    last_uid = None
 
-        if phase == 0:
-            words = "[Slave]  Ready to server, Master!"
-        elif phase == 1:
-            words = "[Slave]  I can download emails, Master!"
-        elif phase == 2:
-            words = "[Slave]  I need the UID of last mail I checked, Master!"
-        elif phase == 3:
-            payload = None
+    while True:
+        if not expect_reply:
+            sequence += 1
 
-            if not more_mails:
-                last_uid = last_uid or r[4]
-                p = fetch_emails(imap_username, imap_password, last_uid)
-            else:
-                p = more_mails
+            if phase == 0:
+                words = "[Slave]  Ready to server, Master!"
+            elif phase == 1:
+                words = "[Slave]  I can download emails, Master!"
+            elif phase == 2:
+                words = "[Slave]  I need the UID of last mail I checked, Master!"
+            elif phase == 3:
+                payload = None
 
-            if not p[2]:
-                words = "[Slave]  I've checked emails. Nothing new, Master!"
-            else:
-                words = "[Slave]  I've checked emails. Here is a new mail, Master!"
-                payload = [p[2][0][0].decode(),p[2][0][1].decode(),p[2][0][2].decode()]
-
-                if len(p[2][1:]) > 0:
-                    more_mails = (p[0], p[1], p[2][1:])
+                if not more_mails:
+                    last_uid = last_uid or r[4]
+                    p = fetch_emails(imap_username, imap_password, last_uid)
                 else:
-                    last_uid = p[0]
-                    more_new_mails_flag = p[1]
-                    more_mails = None
-        else:
-            phase = 0
-            time.sleep(10)
+                    p = more_mails
 
-            continue
-        request = json.dumps([sequence, "Slave", phase, words, payload])
-        client.send_json(request)
-        print(words)
+                if not p[2]:
+                    words = "[Slave]  I've checked emails. Nothing new, Master!"
+                else:
+                    words = "[Slave]  I've checked emails. Here is a new mail, Master!"
+                    payload = [p[2][0][0].decode(), p[2][0][1].decode(), p[2][0][2].decode()]
 
-        if phase == 3 and not more_mails and not more_new_mails_flag:
-            print("[Slave]  Sleeping for 10 seconds.")
-            time.sleep(10)
-
-    expect_reply = True
-
-    while expect_reply:
-        socks = dict(poll.poll(REQUEST_TIMEOUT))
-
-        if socks.get(client) == zmq.POLLIN:
-            reply = client.recv_json()
-
-            if not reply:
-                break
-            r = json.loads(reply)
-
-            if int(r[0]) == sequence:
-                print(r[3])
-                retries_left = REQUEST_RETRIES
-
-                if phase < 3:
-                    phase = r[2] + 1
-                expect_reply = False
+                    if len(p[2][1:]) > 0:
+                        more_mails = (p[0], p[1], p[2][1:])
+                    else:
+                        last_uid = p[0]
+                        more_new_mails_flag = p[1]
+                        more_mails = None
             else:
-                print("[Slave]  Malformed reply from server: %s" % reply)
+                phase = 0
+                time.sleep(10)
 
-        else:
-            print("[Slave]  No response from server, retrying...")
-
-            if retries_left > 0:
-                retries_left -= 1
-
-                break
-            # Socket is confused. Close and remove it.
-            client.setsockopt(zmq.LINGER, 0)
-            client.close()
-            poll.unregister(client)
-            print("[Slave]  Reconnecting and resending last request...")
-            # Create new connection
-            client = context.socket(zmq.REQ)
-            client.connect(SERVER_ENDPOINT)
-            poll.register(client, zmq.POLLIN)
-            retries_left = REQUEST_RETRIES
+                continue
+            request = json.dumps([sequence, "Slave", phase, words, payload])
             client.send_json(request)
+            print(words)
 
-context.term()
+            if phase == 3 and not more_mails and not more_new_mails_flag:
+                print("[Slave]  Sleeping for 10 seconds.")
+                time.sleep(10)
+
+        expect_reply = True
+
+        while expect_reply:
+            socks = dict(poll.poll(REQUEST_TIMEOUT))
+
+            if socks.get(client) == zmq.POLLIN:
+                reply = client.recv_json()
+
+                if not reply:
+                    break
+                r = json.loads(reply)
+
+                if int(r[0]) == sequence:
+                    print(r[3])
+                    retries_left = REQUEST_RETRIES
+
+                    if phase < 3:
+                        phase = r[2] + 1
+                    expect_reply = False
+                else:
+                    print("[Slave]  Malformed reply from server: %s" % reply)
+
+            else:
+                print("[Slave]  No response from server, retrying...")
+
+                if retries_left > 0:
+                    retries_left -= 1
+
+                    break
+                # Socket is confused. Close and remove it.
+                client.setsockopt(zmq.LINGER, 0)
+                client.close()
+                poll.unregister(client)
+                print("[Slave]  Reconnecting and resending last request...")
+                # Create new connection
+                client = context.socket(zmq.REQ)
+                client.connect(SERVER_ENDPOINT)
+                poll.register(client, zmq.POLLIN)
+                retries_left = REQUEST_RETRIES
+                client.send_json(request)
+
+    context.term()
+
+if __name__ == '__main__':
+    zmq_slave()

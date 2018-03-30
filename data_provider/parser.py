@@ -22,11 +22,23 @@ def parse_email(raw_email_decoded):
         email_dict[header] = email[header]
     email_dict['plain'] = None
     email_dict['html'] = None
+    email_dict['attachments'] = list()
     for part in email.walk():
-        if part.get_content_type() == 'text/html':
-            email_dict['html'] = part.get_body().get_content()
-        elif part.get_content_type() == 'text/plain':
-            email_dict['plain'] = part.get_body().get_content()
+        # print(part.get_content_type(), part.get_content_maintype(), part.get('Content-Disposition'))
+        if not part.get('Content-Disposition'):
+            if part.get_content_type() == 'text/html':
+                email_dict['html'] = part.get_body().get_content()
+            elif part.get_content_type() == 'text/plain':
+                email_dict['plain'] = part.get_body().get_content()
+            # else:
+                # print('\t')
+                # print(part.get_content_type())
+        else:
+            attachment = dict()
+            attachment['MIME'] = part.get_content_type()
+            attachment['filename'] = part.get_filename()
+            attachment['body'] = part.get_content()
+            email_dict['attachments'].append(attachment)
 
     return email_dict
 
@@ -52,6 +64,12 @@ while True:
         if e[4]:
             new_email = parse_email(e[4][2])
             print("\n\tI've got the email with the following subject:\n\n\t\t{}\n".format(new_email["Subject"].upper()))
+            if new_email['attachments']:
+                print('\tAttachments:\n')
+                for h in new_email['attachments']:
+                    print('\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'.format(h['filename'], len(h['body']), h['MIME']))
+                    # if h['filename'].endswith('.conf'):
+                        # print(h['body'])
             words = "[Master] Good boy, get me more."
         else:
             words = "[Master] Then check again!"
