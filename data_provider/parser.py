@@ -17,10 +17,10 @@ def parse_email(raw_email_decoded):
     email = BytesParser(policy=default).parsebytes(raw_email)
     email_dict['Date'] = datetime.strptime(
         email['Date'], '%a, %d %b %Y %H:%M:%S %z')
-
+    email_dict['metadata'] = dict()
     for header in ['From', 'To', 'Delivered-To',
                    'Message-ID', 'Subject']:
-        email_dict[header] = email[header]
+        email_dict['metadata'][header] = email[header]
     email_dict['plain'] = None
     email_dict['html'] = None
     email_dict['attachments'] = list()
@@ -61,7 +61,7 @@ def zmq_master():
         elif e[2] == 3:
             if e[4]:
                 new_email = parse_email(e[4][2])
-                print("\n\tI've got the email with the following subject:\n\n\t\t{}\n".format(new_email["Subject"].upper()))
+                print("\n\tI've got the email with the following subject:\n\n\t\t{}\n".format(new_email['metadata']["Subject"].upper()))
                 if new_email['attachments']:
                     print('\tAttachments:\n')
                     for h in new_email['attachments']:
