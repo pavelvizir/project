@@ -4,15 +4,16 @@ from django.db import models
 # Create your models here.
 class Data(models.Model):
     #ID = models.AutoField(primary_key=True, max_length=20)
-    PID = models.IntegerField()
-    CID = models.IntegerField()
-    Psource = models.CharField(max_length=100)
-    Csource = models.CharField(max_length=500)
-    Type = models.CharField(max_length=100)
-    Metadata = models.TextField()
-    Data_main = models.TextField()
-    Additional_data = models.TextField()
+    PID = models.IntegerField() #номер письма
+    CID = models.IntegerField() #номер вложения (письмо считается первым вложением)
+    Psource = models.CharField(max_length=100) # источник: sms, imap
+    Csource = models.CharField(max_length=500) #@example.com, +7(999)453-..., и тд
+    Type = models.CharField(max_length=100) #тип документа предоставляет парсер
+    Metadata = models.TextField() #в исходном коде письма содержатся заголовки, адреса
+    Data_main = models.TextField() #plain text
+    Additional_data = models.TextField() #html, если есть
     Link = models.CharField(max_length=500)
+
 
 
 class Data_providers(models.Model):
