@@ -115,7 +115,8 @@ def zmq_slave():
 
                 if not more_mails:
                     last_uid = last_uid or r[4]
-                    p = fetch_emails(imap_username, imap_password, last_uid)
+                    # p = fetch_emails(imap_username, imap_password, last_uid)
+                    p = fetch_emails(imap_username, imap_password, last_uid, 'imap.gmail.com', 993, 5, 10)
                 else:
                     p = more_mails
 
