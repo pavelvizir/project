@@ -1,0 +1,22 @@
+{% if latest_documents_list %}
+    <ul>
+    {% for document in latest_documents_list %}
+        <li><a href="/main/{{ document.id }}/">{{ document.name }}</a></li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No documents are available.</p>
+{% endif %}
+
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="en">-->
+<!--<head>-->
+    <!--<meta charset="UTF-8">-->
+    <!--<title>Title</title>-->
+<!--</head>-->
+<!--<body>-->
+
+<!--</body>-->
+<!--</html>-->
