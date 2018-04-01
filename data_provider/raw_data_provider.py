@@ -5,7 +5,8 @@ import time
 from imaplib import IMAP4_SSL
 
 import zmq
-
+import msgpack
+# import blosc
 from imap_credentials import imap_password, imap_username
 
 
@@ -99,6 +100,7 @@ def zmq_slave():
     payload = None
     more_mails = None
     last_uid = None
+    more_new_mails_flag = False
 
     while True:
         if not expect_reply:
@@ -124,7 +126,8 @@ def zmq_slave():
                     words = "[Slave]  I've checked emails. Nothing new, Master!"
                 else:
                     words = "[Slave]  I've checked emails. Here is a new mail, Master!"
-                    payload = [p[2][0][0].decode(), p[2][0][1].decode(), p[2][0][2].decode()]
+                    # payload = [p[2][0][0].decode(), p[2][0][1].decode(), p[2][0][2].decode()]
+                    payload = [p[2][0][0], p[2][0][1], p[2][0][2]]
 
                     if len(p[2][1:]) > 0:
                         more_mails = (p[0], p[1], p[2][1:])
@@ -137,8 +140,10 @@ def zmq_slave():
                 time.sleep(10)
 
                 continue
-            request = json.dumps([sequence, "Slave", phase, words, payload])
-            client.send_json(request)
+            # request = json.dumps([sequence, "Slave", phase, words, payload])
+            request = msgpack.packb([sequence, "Slave", phase, words, payload])
+            # client.send_json(request)
+            client.send(request)
             print(words)
 
             if phase == 3 and not more_mails and not more_new_mails_flag:
@@ -151,11 +156,13 @@ def zmq_slave():
             socks = dict(poll.poll(REQUEST_TIMEOUT))
 
             if socks.get(client) == zmq.POLLIN:
-                reply = client.recv_json()
+                # reply = client.recv_json()
+                reply = client.recv()
 
                 if not reply:
                     break
-                r = json.loads(reply)
+                # r = json.loads(reply)
+                r = msgpack.unpackb(reply)
 
                 if int(r[0]) == sequence:
                     print(r[3])
@@ -184,7 +191,8 @@ def zmq_slave():
                 client.connect(SERVER_ENDPOINT)
                 poll.register(client, zmq.POLLIN)
                 retries_left = REQUEST_RETRIES
-                client.send_json(request)
+                # client.send_json(request)
+                client.send(request)
 
     context.term()
 

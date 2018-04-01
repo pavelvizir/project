@@ -4,7 +4,9 @@ from random import randint
 import time
 import zmq
 import json
+import msgpack
 from datetime import datetime
+# import blosc
 from email.policy import default
 from email.parser import BytesParser
 
@@ -13,8 +15,13 @@ def parse_email(raw_email_decoded):
     ''' parse email '''
 
     email_dict = dict()
-    raw_email = raw_email_decoded.encode()
+    # raw_email = raw_email_decoded.encode()
+    raw_email = raw_email_decoded
     email = BytesParser(policy=default).parsebytes(raw_email)
+#    print(email.keys())
+#    print(email.get_all())
+#    for part in email.walk():
+#        print(part)
     email_dict['Date'] = datetime.strptime(
         email['Date'], '%a, %d %b %Y %H:%M:%S %z')
     email_dict['metadata'] = dict()
@@ -47,8 +54,12 @@ def zmq_master():
 
     payload = None
     while True:
-        request = server.recv_json()
-        e = json.loads(request)
+        # request = server.recv_json()
+        request = server.recv()
+        # e = json.loads(request)
+#        uu = blosc.decompress(request)
+        e = msgpack.unpackb(request)
+        len(request)
         print(e[3])
         time.sleep(1) # Do some heavy work
         if e[2] == 0:
@@ -56,11 +67,14 @@ def zmq_master():
         elif e[2] == 1:
             words = "[Master] Then get me some emails!"
         elif e[2] == 2:
-            payload = 0
+            # payload = 0
+            payload = 16
             words = "[Master] The last UID you checked was {}.".format(payload)
         elif e[2] == 3:
             if e[4]:
                 new_email = parse_email(e[4][2])
+                print(len(e[4][2]))
+                print(len(request))
                 print("\n\tI've got the email with the following subject:\n\n\t\t{}\n".format(new_email['metadata']["Subject"].upper()))
                 if new_email['attachments']:
                     print('\tAttachments:\n')
@@ -71,8 +85,10 @@ def zmq_master():
                 words = "[Master] Then check again!"
         else:
             words = "[Master] What are you mumbling?!"
-        r = json.dumps([e[0], "Master", e[2], words, payload])
-        server.send_json(r)
+        # r = json.dumps([e[0], "Master", e[2], words, payload])
+        r = msgpack.packb([e[0], "Master", e[2], words, payload])
+        # server.send_json(r)
+        server.send(r)
         print(words)
 
     server.close()
