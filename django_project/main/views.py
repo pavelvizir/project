@@ -25,6 +25,16 @@ def detail(request, document_id):
     return render(request, 'polls/detail.html', {'document': document})
 
 
+def index_data(request):
+    latest_documents_list = Data.objects.order_by('-date_of_creation')[:5]
+    template = loader.get_template('polls/index_data.html')
+    context = {
+        'latest_documents_list': latest_documents_list
+    }
+    return HttpResponse(template.render(context))
+    # return HttpResponse("Hello, world. You're at the polls index.")
+
+
 # def add_document(request):
 #     document = Document
 #     try:
