@@ -6,7 +6,6 @@ from imaplib import IMAP4_SSL
 
 import zmq
 import msgpack
-# import blosc
 from imap_credentials import imap_password, imap_username
 
 
@@ -28,7 +27,7 @@ def fetch_emails(
     # Readonly, чтобы не сбросить статус "Не прочитано".
 
     # Если передан UID, то читаем всё, что новее. Иначе читаем все письма.
-    imap_uid_string = '{}:*'.format(uid) if uid else 'ALL'
+    imap_uid_string = 'UID {}:*'.format(int(uid) + 1) if uid else 'ALL'
 
     # Получаем tuple из бинарных статуса ответа и строки uid писем.
     reply_numbers, data_numbers = imap_server.uid('search',
@@ -117,32 +116,18 @@ def zmq_slave():
 
                 if not more_mails:
                     last_uid = last_uid or r[4]
-                    # p = fetch_emails(imap_username, imap_password, last_uid)
-                    p = fetch_emails(imap_username, imap_password, last_uid, 'imap.gmail.com', 993, 5, 10)
-                else:
-                    p = more_mails
-
-                if not p[2]:
+                    last_uid, more_new_mails_flag, mails = fetch_emails(imap_username, imap_password, last_uid, 'imap.gmail.com', 993, 5, 10)
+                if not mails:
                     words = "[Slave]  I've checked emails. Nothing new, Master!"
                 else:
                     words = "[Slave]  I've checked emails. Here is a new mail, Master!"
-                    # payload = [p[2][0][0].decode(), p[2][0][1].decode(), p[2][0][2].decode()]
-                    payload = [p[2][0][0], p[2][0][1], p[2][0][2]]
-
-                    if len(p[2][1:]) > 0:
-                        more_mails = (p[0], p[1], p[2][1:])
-                    else:
-                        last_uid = p[0]
-                        more_new_mails_flag = p[1]
-                        more_mails = None
+                    payload = mails
             else:
                 phase = 0
                 time.sleep(10)
 
                 continue
-            # request = json.dumps([sequence, "Slave", phase, words, payload])
             request = msgpack.packb([sequence, "Slave", phase, words, payload])
-            # client.send_json(request)
             client.send(request)
             print(words)
 
@@ -156,12 +141,10 @@ def zmq_slave():
             socks = dict(poll.poll(REQUEST_TIMEOUT))
 
             if socks.get(client) == zmq.POLLIN:
-                # reply = client.recv_json()
                 reply = client.recv()
 
                 if not reply:
                     break
-                # r = json.loads(reply)
                 r = msgpack.unpackb(reply)
 
                 if int(r[0]) == sequence:

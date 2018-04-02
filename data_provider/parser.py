@@ -6,45 +6,41 @@ import zmq
 import json
 import msgpack
 from datetime import datetime
-# import blosc
 from email.policy import default
 from email.parser import BytesParser
 
 
-def parse_email(raw_email_decoded):
+def parse_email(raw_emails):
     ''' parse email '''
+    emails = list()
+    for uid, length, raw_email in raw_emails:
+        email_dict = dict()
+        email = BytesParser(policy=default).parsebytes(raw_email)
+        email_dict['Date'] = datetime.strptime(
+            email['Date'], '%a, %d %b %Y %H:%M:%S %z')
+        email_dict['metadata'] = dict()
+        for header in ['From', 'To', 'Delivered-To',
+                       'Message-ID', 'Subject']:
+            email_dict['metadata'][header] = email[header]
+        email_dict['plain'] = None
+        email_dict['html'] = None
+        email_dict['attachments'] = list()
+        for part in email.walk():
+            if not part.get('Content-Disposition'):
+                if part.get_content_type() == 'text/html':
+                    email_dict['html'] = part.get_body().get_content()
+                elif part.get_content_type() == 'text/plain':
+                    email_dict['plain'] = part.get_body().get_content()
+            else:
+                attachment = dict()
+                attachment['MIME'] = part.get_content_type()
+                attachment['filename'] = part.get_filename()
+                attachment['body'] = part.get_content()
+                email_dict['attachments'].append(attachment)
 
-    email_dict = dict()
-    # raw_email = raw_email_decoded.encode()
-    raw_email = raw_email_decoded
-    email = BytesParser(policy=default).parsebytes(raw_email)
-#    print(email.keys())
-#    print(email.get_all())
-#    for part in email.walk():
-#        print(part)
-    email_dict['Date'] = datetime.strptime(
-        email['Date'], '%a, %d %b %Y %H:%M:%S %z')
-    email_dict['metadata'] = dict()
-    for header in ['From', 'To', 'Delivered-To',
-                   'Message-ID', 'Subject']:
-        email_dict['metadata'][header] = email[header]
-    email_dict['plain'] = None
-    email_dict['html'] = None
-    email_dict['attachments'] = list()
-    for part in email.walk():
-        if not part.get('Content-Disposition'):
-            if part.get_content_type() == 'text/html':
-                email_dict['html'] = part.get_body().get_content()
-            elif part.get_content_type() == 'text/plain':
-                email_dict['plain'] = part.get_body().get_content()
-        else:
-            attachment = dict()
-            attachment['MIME'] = part.get_content_type()
-            attachment['filename'] = part.get_filename()
-            attachment['body'] = part.get_content()
-            email_dict['attachments'].append(attachment)
+        emails.append(email_dict)
 
-    return email_dict
+    return emails
 
 def zmq_master():
     context = zmq.Context(1)
@@ -54,12 +50,8 @@ def zmq_master():
 
     payload = None
     while True:
-        # request = server.recv_json()
         request = server.recv()
-        # e = json.loads(request)
-#        uu = blosc.decompress(request)
         e = msgpack.unpackb(request)
-        len(request)
         print(e[3])
         time.sleep(1) # Do some heavy work
         if e[2] == 0:
@@ -67,27 +59,23 @@ def zmq_master():
         elif e[2] == 1:
             words = "[Master] Then get me some emails!"
         elif e[2] == 2:
-            # payload = 0
-            payload = 16
+            payload = 0
             words = "[Master] The last UID you checked was {}.".format(payload)
         elif e[2] == 3:
             if e[4]:
-                new_email = parse_email(e[4][2])
-                print(len(e[4][2]))
-                print(len(request))
-                print("\n\tI've got the email with the following subject:\n\n\t\t{}\n".format(new_email['metadata']["Subject"].upper()))
-                if new_email['attachments']:
-                    print('\tAttachments:\n')
-                    for h in new_email['attachments']:
-                        print('\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'.format(h['filename'], len(h['body']), h['MIME']))
+                new_emails = parse_email(e[4])
+                for new_email in new_emails:
+                    print("\n\tI've got the email with the following subject:\n\n\t\t{}\n".format(new_email['metadata']["Subject"].upper()))
+                    if new_email['attachments']:
+                        print('\tAttachments:\n')
+                        for h in new_email['attachments']:
+                            print('\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'.format(h['filename'], len(h['body']), h['MIME']))
                 words = "[Master] Good boy, get me more."
             else:
                 words = "[Master] Then check again!"
         else:
             words = "[Master] What are you mumbling?!"
-        # r = json.dumps([e[0], "Master", e[2], words, payload])
         r = msgpack.packb([e[0], "Master", e[2], words, payload])
-        # server.send_json(r)
         server.send(r)
         print(words)
 
