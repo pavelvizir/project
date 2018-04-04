@@ -46,38 +46,26 @@ def zmq_master():
     context = zmq.Context(1)
     server = context.socket(zmq.REP)
     server.bind("tcp://*:5555")
-    print("[Master] I'm alive! Waiting for slaves to ask for my orders...")
 
-    payload = None
     while True:
         request = server.recv()
-        e = msgpack.unpackb(request)
-        print(e[3])
-        time.sleep(1) # Do some heavy work
-        if e[2] == 0:
-            words = "[Master] Then serve me! What can you do?"
-        elif e[2] == 1:
-            words = "[Master] Then get me some emails!"
-        elif e[2] == 2:
+        request = msgpack.unpackb(request)
+        payload = None
+        if request[0] == 0:
             payload = 0
-            words = "[Master] The last UID you checked was {}.".format(payload)
-        elif e[2] == 3:
-            if e[4]:
-                new_emails = parse_email(e[4])
+        elif request[0] == 1:
+            if request[1]:
+                new_emails = parse_email(request[1])
                 for new_email in new_emails:
                     print("\n\tI've got the email with the following subject:\n\n\t\t{}\n".format(new_email['metadata']["Subject"].upper()))
                     if new_email['attachments']:
-                        print('\tAttachments:\n')
+                        print('\t\tAttachments:\n')
                         for h in new_email['attachments']:
-                            print('\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'.format(h['filename'], len(h['body']), h['MIME']))
-                words = "[Master] Good boy, get me more."
+                            print('\t\t\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'.format(h['filename'], len(h['body']), h['MIME']))
             else:
-                words = "[Master] Then check again!"
-        else:
-            words = "[Master] What are you mumbling?!"
-        r = msgpack.packb([e[0], "Master", e[2], words, payload])
-        server.send(r)
-        print(words)
+                print('\n\tNo new emails.\n')
+        reply = msgpack.packb([request[0], payload])
+        server.send(reply)
 
     server.close()
     context.term()
