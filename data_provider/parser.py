@@ -11,7 +11,7 @@ from datetime import datetime
 from email.policy import default
 from email.parser import BytesParser
 from imaplib import IMAP4_SSL
-from imap_credentials import imap_password, imap_username
+from imap_credentials import imap_password, imap_username, imap_server, imap_port
 
 URL = 'http://127.0.0.1:5000/api'
 
@@ -211,7 +211,7 @@ def zmq_slave():
             if phase == 1:
                 if not more_mails:
                     last_uid = last_uid or reply[1]
-                    last_uid, more_new_mails_flag, mails = fetch_emails(imap_username, imap_password, last_uid, 'imap.gmail.com', 993, 5, 10)
+                    last_uid, more_new_mails_flag, mails = fetch_emails(imap_username, imap_password, last_uid, imap_server, imap_port, 5, 10)
                 if mails:
                     payload = mails
             request = msgpack.packb([phase, payload])
