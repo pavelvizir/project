@@ -61,8 +61,9 @@ def zmq_master():
     ''' Main app logic, threads start from here.'''
     context = zmq.Context.instance()
     server = context.socket(zmq.REP)
-    server.bind("tcp://*:5555")
+    server.bind("inproc://zmq")  # "tcp://*:5555")
     thread = threading.Thread(target=zmq_slave)
+    thread.daemon = True
     thread.start()
 
     while True:
@@ -210,7 +211,7 @@ def zmq_slave():
 
     request_timeout = 2500
     request_retries = 3
-    server_endpoint = "tcp://localhost:5555"
+    server_endpoint = "inproc://zmq"  # "tcp://localhost:5555"
 
     # context = zmq.Context(1)
     context = zmq.Context.instance()
@@ -281,7 +282,8 @@ def zmq_slave():
                 retries_left = request_retries
                 client.send(request)
 
-    context.term()
+    client.close()
+    # context.term()
 
 
 if __name__ == '__main__':
