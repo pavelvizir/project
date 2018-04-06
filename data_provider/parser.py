@@ -1,35 +1,44 @@
 #!/usr/bin/env python
-'''
-'''
-import time
-import zmq
+''' Get emails, parse them and pass to API '''
+
 import json
+import threading
+import time
+from datetime import datetime
+from email.parser import BytesParser
+from email.policy import default
+from imaplib import IMAP4_SSL
+
 import msgpack
 import requests
-import threading
-from datetime import datetime
-from email.policy import default
-from email.parser import BytesParser
-from imaplib import IMAP4_SSL
-from imap_credentials import imap_password, imap_username, imap_server, imap_port
+import zmq
+
+from imap_credentials import (imap_password, imap_port, imap_server,
+                              imap_username)
 
 URL = 'http://127.0.0.1:5000/api'
+
 
 def parse_email(raw_emails):
     ''' parse email '''
     emails = list()
+
     for uid, length, raw_email in raw_emails:
         email_dict = dict()
         email = BytesParser(policy=default).parsebytes(raw_email)
+        email['uid'] = uid.decode()
+        email['lenth'] = length.decode()
         email_dict['Date'] = datetime.strptime(
             email['Date'], '%a, %d %b %Y %H:%M:%S %z')
         email_dict['metadata'] = dict()
+
         for header in ['From', 'To', 'Delivered-To',
                        'Message-ID', 'Subject']:
             email_dict['metadata'][header] = email[header]
         email_dict['plain'] = None
         email_dict['html'] = None
         email_dict['attachments'] = list()
+
         for part in email.walk():
             if not part.get('Content-Disposition'):
                 if part.get_content_type() == 'text/html':
@@ -47,8 +56,9 @@ def parse_email(raw_emails):
 
     return emails
 
+
 def zmq_master():
-    # context = zmq.Context(1)
+    ''' Main app logic, threads start from here.'''
     context = zmq.Context.instance()
     server = context.socket(zmq.REP)
     server.bind("tcp://*:5555")
@@ -59,6 +69,7 @@ def zmq_master():
         request = server.recv()
         request = msgpack.unpackb(request)
         payload = None
+
         if request[0] == 0:
             get_error = False
             requests_timeout = (5, 30)
@@ -94,17 +105,29 @@ def zmq_master():
                 except requests.exceptions.HTTPError as requests_exception:
                     post_error = True
                     print('HTTP error: {}'.format(requests_exception))
-                except requests.exceptions.RequestException as requests_exception:
+                except requests.exceptions.RequestException as\
+                        requests_exception:
                     post_error = True
                     print('Connection eror: {}'.format(requests_exception))
+
                 if post_error:
                     for new_email in new_emails:
-                        print("\n\tI've got the email with the following subject:\n\n\t\t{}\n".format(new_email['metadata']["Subject"].upper()))
+                        print(
+                            "\n\tI've got the email with the following subject:\
+                             \n\n\t\t{}\n"
+                            .format(new_email['metadata']["Subject"].upper()))
+
                         if new_email['attachments']:
                             print('\t\tAttachments:\n')
-                            for h in new_email['attachments']:
-                                print('\t\t\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'.format(h['filename'], len(h['body']), h['MIME']))
- 
+
+                            for attachment in new_email['attachments']:
+                                print(
+                                    '\t\t\t[Filename]: {:<30} [Size]: {:<10} \
+                                            [MIME]: {:<8}\n'
+                                    .format(attachment['filename'],
+                                            len(attachment['body']),
+                                            attachment['MIME']))
+
             else:
                 print('\n\tNo new emails.\n')
         reply = msgpack.packb([request[0], payload])
@@ -112,6 +135,7 @@ def zmq_master():
 
     server.close()
     context.term()
+
 
 def fetch_emails(
         username,
@@ -121,22 +145,20 @@ def fetch_emails(
         port=993,
         mail_batch_limit=5,    # Если писем много, то качаем пачкой.
         mail_total_limit=10):  # Временное ограничение на общее кол-во писем.
-    ''' returns up to "mail_batch_limit" new emails from INBOX per run
+    ''' Returns up to "mail_batch_limit" new emails from INBOX per run
         touches no more than "mail_total_limit" mails per multiple runs'''
 
-    imap_server = IMAP4_SSL(address, port)              # Подключаемся.
-    imap_server.login(username, password)               # Логинимся.
-    # Подключаемся к INBOX
-    imap_server.select(mailbox='INBOX', readonly=True)  # Пока только INBOX.
-    # Readonly, чтобы не сбросить статус "Не прочитано".
-
+    imap_connect = IMAP4_SSL(address, port)              # Подключаемся.
+    imap_connect.login(username, password)               # Логинимся.
+    # Подключаемся к INBOX. Readonly, чтобы не сбросить статус "Не прочитано".
+    imap_connect.select(mailbox='INBOX', readonly=True)
     # Если передан UID, то читаем всё, что новее. Иначе читаем все письма.
     imap_uid_string = 'UID {}:*'.format(int(uid) + 1) if uid else 'ALL'
 
     # Получаем tuple из бинарных статуса ответа и строки uid писем.
-    reply_numbers, data_numbers = imap_server.uid('search',
-                                                  None,
-                                                  imap_uid_string)
+    reply_numbers, data_numbers = imap_connect.uid('search',
+                                                   None,
+                                                   imap_uid_string)
 
     if reply_numbers == 'OK':
         uid_bin = data_numbers[0].split()  # Получаем список бинарных чисел.
@@ -153,15 +175,17 @@ def fetch_emails(
 
         elif len_uid_bin > mail_batch_limit:
             more_mails = True
+
             if len_uid_bin > mail_total_limit:
                 uid_bin = uid_bin[-mail_total_limit:]
 
             uid_bin = uid_bin[:mail_batch_limit]
 
         result = list()
-        reply_email, data_email = imap_server.uid('fetch',
-                                                  b','.join(uid_bin),
-                                                  '(RFC822)')
+        reply_email, data_email = imap_connect.uid('fetch',
+                                                   b','.join(uid_bin),
+                                                   '(RFC822)')
+
         if reply_email == 'OK':
             for i in range(0, len(data_email), 2):
                 imap_info = data_email[i][0].split()
@@ -172,6 +196,7 @@ def fetch_emails(
                 result.append((uid_email, len_email, raw_email))
 
             last_uid = uid_email.decode()
+
             return last_uid, more_mails, result
 
         return '{} returned error: {}'.format(address, reply_email)
@@ -179,25 +204,26 @@ def fetch_emails(
     else:
         return '{} returned error: {}'.format(address, reply_numbers)
 
+
 def zmq_slave():
     ''' ZMQ '''
 
-    REQUEST_TIMEOUT = 2500
-    REQUEST_RETRIES = 3
-    SERVER_ENDPOINT = "tcp://localhost:5555"
+    request_timeout = 2500
+    request_retries = 3
+    server_endpoint = "tcp://localhost:5555"
 
     # context = zmq.Context(1)
     context = zmq.Context.instance()
 
     # print("[Slave]  I've come to life! Connecting to server...")
     client = context.socket(zmq.REQ)
-    client.connect(SERVER_ENDPOINT)
+    client.connect(server_endpoint)
 
     poll = zmq.Poller()
     poll.register(client, zmq.POLLIN)
 
     # sequence = 0
-    retries_left = REQUEST_RETRIES
+    retries_left = request_retries
     expect_reply = False
     phase = 0
     more_mails = None
@@ -211,18 +237,22 @@ def zmq_slave():
             if phase == 1:
                 if not more_mails:
                     last_uid = last_uid or reply[1]
-                    last_uid, more_new_mails_flag, mails = fetch_emails(imap_username, imap_password, last_uid, imap_server, imap_port, 5, 10)
+                    last_uid, more_new_mails_flag, mails = fetch_emails(
+                        imap_username, imap_password, last_uid,
+                        imap_server, imap_port, 5, 10)
+
                 if mails:
                     payload = mails
             request = msgpack.packb([phase, payload])
             client.send(request)
+
             if phase == 1 and not more_mails and not more_new_mails_flag:
                 time.sleep(10)
 
         expect_reply = True
 
         while expect_reply:
-            socks = dict(poll.poll(REQUEST_TIMEOUT))
+            socks = dict(poll.poll(request_timeout))
 
             if socks.get(client) == zmq.POLLIN:
                 reply = client.recv()
@@ -230,7 +260,7 @@ def zmq_slave():
                 if not reply:
                     break
                 reply = msgpack.unpackb(reply)
-                retries_left = REQUEST_RETRIES
+                retries_left = request_retries
 
                 if phase < 1:
                     phase = reply[0] + 1
@@ -246,9 +276,9 @@ def zmq_slave():
                 client.close()
                 poll.unregister(client)
                 client = context.socket(zmq.REQ)
-                client.connect(SERVER_ENDPOINT)
+                client.connect(server_endpoint)
                 poll.register(client, zmq.POLLIN)
-                retries_left = REQUEST_RETRIES
+                retries_left = request_retries
                 client.send(request)
 
     context.term()
