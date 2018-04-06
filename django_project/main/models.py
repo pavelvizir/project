@@ -45,7 +45,7 @@ class Choice(models.Model):
 
 
 class Data(models.Model):
-	#ID = models.AutoField(primary_key=True, max_length=20)
+	ID = models.AutoField(primary_key=True, max_length=20)
 	PID = models.IntegerField()
 	CID = models.IntegerField()
 	Psource = models.CharField(max_length=100)
