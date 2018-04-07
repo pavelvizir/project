@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <!DOCTYPE html>
-<head lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +8,10 @@
   <title>Заголовок страницы</title>
   {% load staticfiles %}
   <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type="text/css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
 </head>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="#">Menu</a>
+  <a class="navbar-brand" href="/main/">Mine</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -19,7 +19,7 @@
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
       <li class="nav-item active">
-        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="/main/data/">Data <span class="sr-only">(current)</span></a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="#">Link</a>
@@ -45,13 +45,13 @@
     </form>
   </div>
 </nav>
-</head>
+
 <body>
 {% if latest_documents_list %}
   <div class="container">
     <ul class="list-group">
-      {% for Data in latest_documents_list %}
-        <li class="list-group-item"><a href="/main/data/{{ Data.ID }}/">{{ Data.Data_main }}</a></li>
+      {% for data in latest_documents_list %}
+        <li class="list-group-item"><a href="/main/data/{{ data.id }}/">{{ data.Metadata }}</a></li>
       {% endfor %}
     </ul>
   {% else %}
@@ -60,4 +60,3 @@
   </div>
 </body>
 </html>
-

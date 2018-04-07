@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-<head lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,9 +7,10 @@
   <title>Заголовок страницы</title>
   {% load staticfiles %}
   <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" type="text/css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}" type="text/css">
 </head>
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <a class="navbar-brand" href="/main/data/">Mine</a>
+  <a class="navbar-brand" href="/main/">Mine</a>
   <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
     <span class="navbar-toggler-icon"></span>
   </button>
@@ -45,15 +45,18 @@
   </div>
 </nav>
 <body>
-<h1>{{ Data.ID }}.{{ Data.PID }}.{{ Data.CID }}</h1>
+<h1>{{ data.id }}.{{ data.PID }}.{{ data.CID }}</h1>
 <div class="background">
-    <div class="Pscourse">{{ Data.Psource }}</div>
-    <div class="Cscource">{{ Data.Csource }}</div>
-    <div class="Type">{{ Data.Type }}</div>
-    <div class="Metadata">{{ Data.Metadata }}</div>
-    <div class="Data_main">{{ Data.Data_main }}</div>
-    <div class="Additional_data">{{ Data.Additional_data }}</div>
-    <div class="Link">{{ Data.Link }}</div>
+    <div class="Pscourse">{{ data.Psource }}</div>
+    <div class="Cscource">{{ data.Csource }}</div>
+    <div class="Type">{{ data.Type }}</div>
+    <div class="Metadata">{{ data.Metadata }}</div>
+    <div class="Data_main">{{ data.Data_main }}</div>
+    <div class="Additional_data">{{ data.Additional_data }}</div>
+    <div class="Link">{{ data.Link }}</div>
 </div>
 </body>
 </html>
+
+
+<!--Data.ID }}.{{ Data.PID }}.{{ Data.CID -->

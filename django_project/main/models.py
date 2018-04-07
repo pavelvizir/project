@@ -45,7 +45,7 @@ class Choice(models.Model):
 
 
 class Data(models.Model):
-	ID = models.AutoField(primary_key=True, max_length=20)
+	# ID = models.AutoField(primary_key=True, max_length=20)
 	PID = models.IntegerField()
 	CID = models.IntegerField()
 	Psource = models.CharField(max_length=100)
@@ -59,17 +59,16 @@ class Data(models.Model):
 	def __int__(self):
 		return self.PID
 
-	def was_published_recently(self):
-		return self.Metadata >= timezone.now() - datetime.timedelta(days=1)
+	# def was_published_recently(self):
+	# 	return self.Metadata >= timezone.now() - datetime.timedelta(days=1)
 
 
-class Data_providers(models.Model):
-	#ID = models.AutoField(primary_key=True, max_length=20)
-	Provider = models.CharField(max_length=100)
-	Name = models.CharField(max_length=100)
-	Type = models.CharField(max_length=100)
-	Last_number = models.IntegerField()
-
-	def __str__(self):
-		return self.Name
+# class DataProviders(models.Model):
+# 	provider = models.CharField(max_length=100)
+# 	name = models.CharField(max_length=100)
+# 	type = models.CharField(max_length=100)
+# 	last_number = models.IntegerField()
+#
+# 	def __str__(self):
+# 		return self.Name
 
