@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -44,19 +45,18 @@
     </form>
   </div>
 </nav>
+
 <body>
-<h1>{{ data.id }}.{{ data.PID }}.{{ data.CID }}</h1>
-<div class="background">
-    <div class="Pscourse">{{ data.Psource }}</div>
-    <div class="Cscource">{{ data.Csource }}</div>
-    <div class="Type">{{ data.Type }}</div>
-    <div class="Metadata">{{ data.Metadata }}</div>
-    <div class="Data_main">{{ data.Data_main }}</div>
-    <div class="Additional_data">{{ data.Additional_data }}</div>
-    <div class="Link">{{ data.Link }}</div>
-</div>
+{% if latest_documents_list %}
+  <div class="container">
+    <ul class="list-group">
+      {% for data in latest_documents_list %}
+        <li class="list-group-item"><a href="/main/data/{{ data.id }}/">{{ data.Metadata }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No documents are available.</p>
+  {% endif %}
+  </div>
 </body>
 </html>
-
-
-<!--Data.ID }}.{{ Data.PID }}.{{ Data.CID -->
