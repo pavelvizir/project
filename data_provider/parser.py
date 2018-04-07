@@ -16,7 +16,7 @@ import zmq
 from imap_credentials import (imap_password, imap_port, imap_server,
                               imap_username)
 
-URL = 'http://127.0.0.1:5000/api'
+URL = 'http://127.0.0.1:8000/main/api/'
 
 
 def parse_email(raw_emails):
@@ -26,8 +26,8 @@ def parse_email(raw_emails):
     for uid, length, raw_email in raw_emails:
         email_dict = dict()
         email = BytesParser(policy=default).parsebytes(raw_email)
-        email['uid'] = uid.decode()
-        email['lenth'] = length.decode()
+        email_dict['uid'] = uid.decode()
+        email_dict['lenth'] = length.decode()
         email_dict['Date'] = datetime.strptime(
             email['Date'], '%a, %d %b %Y %H:%M:%S %z')
         email_dict['metadata'] = dict()
