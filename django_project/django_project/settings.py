@@ -29,7 +29,7 @@ SECRET_KEY = '(pn+ovc%p#am)wh+5+k)&e)l_yi_=26i&@h4x=5u3v6&u3fy9a'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,6 +43,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'main',
+    'bootstrap3',
+
 ]
 
 MIDDLEWARE = [
@@ -131,3 +134,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = None
