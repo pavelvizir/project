@@ -12,6 +12,7 @@ from imaplib import IMAP4_SSL
 import msgpack
 import requests
 import zmq
+import socket
 
 from imap_credentials import (imap_password, imap_port, imap_server,
                               imap_username)
@@ -23,24 +24,26 @@ def parse_email(raw_emails):
     ''' parse email '''
     emails = list()
 
-    for uid, length, raw_email in raw_emails:
+    for uid, length, raw_headers, raw_email in raw_emails:
         email_dict = dict()
         email = BytesParser(policy=default).parsebytes(raw_email)
+        headers = BytesParser(policy=default).parsebytes(raw_headers)
         email_dict['uid'] = uid.decode()
-        email_dict['lenth'] = length.decode()
+        email_dict['length'] = length.decode()
         email_dict['Date'] = datetime.strptime(
-            email['Date'], '%a, %d %b %Y %H:%M:%S %z')
+            headers['Date'], '%a, %d %b %Y %H:%M:%S %z')
         email_dict['metadata'] = dict()
 
         for header in ['From', 'To', 'Delivered-To',
                        'Message-ID', 'Subject']:
-            email_dict['metadata'][header] = email[header]
+            email_dict['metadata'][header] = headers[header]
         email_dict['plain'] = None
         email_dict['html'] = None
         email_dict['attachments'] = list()
 
         for part in email.walk():
-            if not part.get('Content-Disposition'):
+            # if not part.get('Content-Disposition'):
+            if not part.is_attachment():  # get('Content-Disposition'):
                 if part.get_content_type() == 'text/html':
                     email_dict['html'] = part.get_body().get_content()
                 elif part.get_content_type() == 'text/plain':
@@ -150,6 +153,8 @@ def fetch_emails(
         touches no more than "mail_total_limit" mails per multiple runs'''
 
     imap_connect = IMAP4_SSL(address, port)              # Подключаемся.
+    # imap_connect.sock.setsockopt(imap_connect.IPPROTO_TCP, imap_connect.TCP_NODELAY, 1)
+    imap_connect.sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
     imap_connect.login(username, password)               # Логинимся.
     # Подключаемся к INBOX. Readonly, чтобы не сбросить статус "Не прочитано".
     imap_connect.select(mailbox='INBOX', readonly=True)
@@ -160,7 +165,6 @@ def fetch_emails(
     reply_numbers, data_numbers = imap_connect.uid('search',
                                                    None,
                                                    imap_uid_string)
-
     if reply_numbers == 'OK':
         uid_bin = data_numbers[0].split()  # Получаем список бинарных чисел.
         len_uid_bin = len(uid_bin)
@@ -171,8 +175,8 @@ def fetch_emails(
         if len_uid_bin <= 1:
             if uid_bin[0] > str(uid).encode():
                 last_uid = uid_bin[0].decode()
-
-            return last_uid, more_mails, result
+            else:
+                return last_uid, more_mails, result
 
         elif len_uid_bin > mail_batch_limit:
             more_mails = True
@@ -183,21 +187,44 @@ def fetch_emails(
             uid_bin = uid_bin[:mail_batch_limit]
 
         result = list()
+        # reply_email, data_email = imap_connect.uid('fetch',
+        #                                            b','.join(uid_bin),
+        #                                            '(RFC822)')
+        superstring = '(RFC822.HEADER BODY.PEEK[1])' if imap_server == 'imap.rambler.ru' else '(RFC822.HEADER BODY.PEEK[])'
         reply_email, data_email = imap_connect.uid('fetch',
                                                    b','.join(uid_bin),
-                                                   '(RFC822)')
-
+                                                   # '(BODYSTRUCTURE)')
+                                                   # '(RFC822.HEADER BODY.PEEK[1])')
+                                                   # '(RFC822.HEADER BODY.PEEK[1])')
+                                                   superstring)
+                                                   # '(BODY[1])')
+                                                   # '(BODY.PEEK[HEADER])')
+                                                   # '(ENVELOPE)')
+        # tt1, tt2 = imap_connect.uid('fetch',
+        #                            b','.join(uid_bin),
+        #                            '(BODYSTRUCTURE)')
+        #                            #               '(RFC822.HEADER BODY.PEEK[1])')
         if reply_email == 'OK':
-            for i in range(0, len(data_email), 2):
+            for i in range(0, len(data_email), 3):
                 imap_info = data_email[i][0].split()
                 # Это строка вида: b'id (UID xx RFC822 {byte_length} ('
-                uid_email = imap_info[2]        # UID
-                len_email = imap_info[4][1:-1]  # {byte_length}
-                raw_email = data_email[i][1]
-                result.append((uid_email, len_email, raw_email))
+                # rambler, string looks like: b'id (RFC822 {byte_length} ('
+                # ..., b'UID uid)'
+                try:
+                    len_email = imap_info[4][1:-1]  # {byte_length}
+                    uid_email = imap_info[2]        # UID
+                except IndexError:
+                    len_email = imap_info[2][1:-1]
+                    uid_email = data_email[i+2][5:-1]
+
+                raw_headers = data_email[i][1]
+                raw_email = data_email[i+1][1]
+                result.append((uid_email, len_email, raw_headers, raw_email))
 
             last_uid = uid_email.decode()
 
+            imap_connect.close()
+            imap_connect.logout()
             return last_uid, more_mails, result
 
         return '{} returned error: {}'.format(address, reply_email)
