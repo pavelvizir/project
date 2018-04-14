@@ -1,7 +1,4 @@
 Django 
 pyzmq
 django-bootstrap3
-rest_framework
-__future__ -- юникоды литералы
-
-
+djangorestframework==3.8.2

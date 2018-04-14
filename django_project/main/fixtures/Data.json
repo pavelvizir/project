@@ -1,6 +1,6 @@
 [{
   "fields": {
-	"data_main":"ываыва",
+	"data_main": "weewe",
 	"typedoc":"gtrgrt",
 	"additional_data":"asss",
 	"CID":1,
@@ -24,3 +24,6 @@
   "model": "main.Data",
   "pk": 2
 }]
+
+
+

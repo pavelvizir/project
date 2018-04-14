@@ -13,7 +13,6 @@ from django.utils.decorators import method_decorator
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirect
 from django.template import RequestContext, loader
-from django.urls import reverse
 from django.views import View
 
 
