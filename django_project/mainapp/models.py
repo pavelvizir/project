@@ -12,7 +12,7 @@ class Data(models.Model):
     Metadata = models.TextField() #в исходном коде письма содержатся заголовки, адреса
     Data_main = models.TextField() #plain text
     Additional_data = models.TextField() #html, если есть
-    Link = models.CharField(max_length=500)
+    Link = models.CharField(max_length=500, null=True)
 
 
 
