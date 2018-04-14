@@ -1,5 +1,20 @@
+<<<<<<< HEAD
 .venv 
 *__pycache__ 
 *.sqlite3 
 imap_credentials.py
 *.pyc
+=======
+.venv
+__pycache__
+*.sqlite3
+imap_credentials.py
+
+#idea
+*.iml
+*.ipr
+.iws
+django_project.idea/*
+django_project/.idea/workspace.xml
+env/
+>>>>>>> 0426fb8d0be4b1aa3aac40642bc6ef000950d639

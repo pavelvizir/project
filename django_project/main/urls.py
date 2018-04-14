@@ -1,3 +1,4 @@
+from django.urls import path
 from django.conf.urls import url
 from . import views
 from .views import MyView
@@ -10,4 +11,6 @@ urlpatterns = [
     # url(r'^(?P<document_id>[0-9]+)/results/$', views.results, name='results'),
     url(r'^data/$', views.index_data, name='index_data'),
     url('api/', MyView.as_view(), name='my-view'),
+    path('', views.create, name='create'),
+    path('last', views.get_last_id, name='get_last_id')
 ]

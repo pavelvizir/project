@@ -93,7 +93,11 @@ def zmq_master():
                 print('\n\tProviding UID locally\n')
                 payload = 0
             else:
+<<<<<<< HEAD
                 payload = requests_get.json()["UID"]
+=======
+                payload = requests_get.json()['UID']
+>>>>>>> 0426fb8d0be4b1aa3aac40642bc6ef000950d639
         elif request[0] == 1:
             if request[1]:
                 print('\n\tNew mails arrived.\n')
