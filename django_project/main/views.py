@@ -20,23 +20,23 @@ from django.views import View
 from main.models import *
 
 
-# def index(request):
-#     # pass
-#     latest_documents_list = Document.objects.order_by('-date_of_creation')[:5]
-#     template = loader.get_template('polls/index.html')
-#     context = {
-#         'latest_documents_list': latest_documents_list
-#     }
-#     return HttpResponse(template.render(context))
-    # return HttpResponse("Hello, world. You're at the polls index.")
+def index(request):
+    # pass
+    latest_documents_list = Document.objects.order_by('-date_of_creation')[:5]
+    template = loader.get_template('polls/index.html')
+    context = {
+        'latest_documents_list': latest_documents_list
+    }
+    return HttpResponse(template.render(context))
+    return HttpResponse("Hello, world. You're at the polls index.")
 
 
-# def detail(request, id):
-#     try:
-#         data = get_object_or_404(Data, pk=id)
-#     except Data.DoesNotExist:
-#         raise Http404("Document does not exist!")
-#     return render(request, 'polls/detail.html', {'data': data})
+def detail(request, id):
+    try:
+        data = get_object_or_404(Data, pk=id)
+    except Data.DoesNotExist:
+        raise Http404("Document does not exist!")
+    return render(request, 'polls/detail.html', {'data': data})
 
 
 # def detail2(request, document_id):
@@ -47,14 +47,14 @@ from main.models import *
 #     return render(request, 'polls/detail.html', {'document': document})
 
 
-# def index_data(request):
-#     latest_documents_list = Data.objects.order_by('PID')
-#     template = loader.get_template('polls/index_data.html')
-#     context = {
-#         'latest_documents_list': latest_documents_list
-#     }
-#     return HttpResponse(template.render(context))
-#     # return HttpResponse("Hello, world. You're at the polls index.")
+def index_data(request):
+    latest_documents_list = Data.objects.order_by('PID')
+    template = loader.get_template('polls/index_data.html')
+    context = {
+        'latest_documents_list': latest_documents_list
+    }
+    return HttpResponse(template.render(context))
+    # return HttpResponse("Hello, world. You're at the polls index.")
 
 
 # def results(request, ID):

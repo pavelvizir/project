@@ -15,21 +15,21 @@ class Data(models.Model):
     link = models.CharField(max_length=500, null=True)  
    
 
-	def __int__(self):
-		return self.PID
+    def __int__(self):
+        return self.PID
 
-	# def was_published_recently(self):
-	# 	return self.Metadata >= timezone.now() - datetime.timedelta(days=1)
+    # def was_published_recently(self):
+    #     return self.Metadata >= timezone.now() - datetime.timedelta(days=1)
 
 
 # class DataProviders(models.Model):
-# 	provider = models.CharField(max_length=100)
-# 	name = models.CharField(max_length=100)
-# 	type = models.CharField(max_length=100)
-# 	last_number = models.IntegerField()
+#     provider = models.CharField(max_length=100)
+#     name = models.CharField(max_length=100)
+#     type = models.CharField(max_length=100)
+#     last_number = models.IntegerField()
 #
-# 	def __str__(self):
-# 		return self.Name
+#     def __str__(self):
+#         return self.Name
 
 class Mail_Account(models.Model):
     email = models.CharField(max_length=100, primary_key=True)
@@ -54,3 +54,17 @@ class Mail(models.Model):
 
     def __str__(self):
         return self._subject
+
+class Document(models.Model):
+    name = models.CharField(max_length=50)
+    date_of_creation = models.DateField()
+    content = models.TextField()
+    content_type = models.CharField(max_length=30)
+    # tags = models.ManyToManyField(Tag, related_name="documents")
+    path = models.CharField(max_length=1024)
+
+    def __str__(self):
+        return self.name
+
+    def was_published_recently(self):
+        return self.date_of_creation >= timezone.now() - datetime.timedelta(days=1)
