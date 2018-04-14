@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-''' Get emails, parse them and pass to API '''
+''' Get emails, parse them and pass to API ---'''
 
 import json
 import threading
