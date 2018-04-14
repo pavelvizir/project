@@ -1,0 +1,26 @@
+[{
+  "fields": {
+	"data_main":"ываыва",
+	"typedoc":"gtrgrt",
+	"additional_data":"asss",
+	"CID":1,
+	"PID":1,
+	"metadata":"sfds",
+	"psource":"gmail"
+},
+  "model": "main.Data",
+  "pk": 1
+},
+{
+  "fields": {
+	"data_main":"qwqwqwq",
+	"typedoc":"text",
+	"additional_data":"asss",
+	"CID":2,
+	"PID":2,
+	"metadata":"text,im",
+	"psource":"gmail"
+},
+  "model": "main.Data",
+  "pk": 2
+}]
