@@ -8,3 +8,4 @@ imap_credentials.py
 *.ipr
 .iws
 .idea/*
+.idea/workspace.xml
