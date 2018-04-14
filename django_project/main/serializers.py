@@ -9,9 +9,9 @@ class DataSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'PID',
                   'CID',
-                  'Psource',
-                  'Type',
-                  'Metadata',
-                  'Data_main',
-                  'Additional_data',
-                  'Link')
+                  'psource',
+                  'type',
+                  'metadata',
+                  'data_main',
+                  'additional_data',
+                  'link')
