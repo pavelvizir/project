@@ -3,4 +3,4 @@ __pycache__
 *.sqlite3
 imap_credentials.py
 
-.idea/**
+.idea/

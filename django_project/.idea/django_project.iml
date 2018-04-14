@@ -3,8 +3,6 @@
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/mainapp" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/django_project" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/.idea" />
     </content>
     <orderEntry type="inheritedJdk" />
