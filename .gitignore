@@ -7,5 +7,6 @@ imap_credentials.py
 *.iml
 *.ipr
 .iws
-.idea/*
-.idea/workspace.xml
+django_project.idea/*
+django_project/.idea/workspace.xml
+env/
