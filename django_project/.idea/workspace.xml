@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="0924bb84-d2c0-43ae-b21e-fd418acb5487" name="Default" comment="Serializers.py файл, где создается сериала">
-      <change beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
+    <list default="true" id="0924bb84-d2c0-43ae-b21e-fd418acb5487" name="Default" comment="добавлена потеряная миграция">
       <change beforePath="$PROJECT_DIR$/.idea/django_project.iml" afterPath="" />
       <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="" />
       <change beforePath="$PROJECT_DIR$/.idea/libraries/R_User_Library.xml" afterPath="" />
@@ -47,7 +46,7 @@
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="75">
-              <caret line="5" column="6" lean-forward="false" selection-start-line="5" selection-start-column="6" selection-end-line="5" selection-end-column="6" />
+              <caret line="5" column="5" lean-forward="false" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
               <folding />
             </state>
           </provider>
@@ -176,6 +175,12 @@
               <item name="django_project" type="462c0819:PsiDirectoryNode" />
               <item name="mainapp" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="django_project" type="b2602c69:ProjectViewProjectNode" />
+              <item name="django_project" type="462c0819:PsiDirectoryNode" />
+              <item name="mainapp" type="462c0819:PsiDirectoryNode" />
+              <item name="migrations" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -264,7 +269,21 @@
       <option name="project" value="LOCAL" />
       <updated>1523700565149</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="попытка заигнорить идеевскую хрень">
+      <created>1523700813928</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1523700813928</updated>
+    </task>
+    <task id="LOCAL-00004" summary="добавлена потеряная миграция">
+      <created>1523701133836</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1523701133836</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TodoView">
@@ -310,7 +329,9 @@
     </ignored-roots>
     <MESSAGE value="fixtures.py описывает свяь json-ов (инфа для заполнения базы), которые лежат в папке fixtures с самой базой&#10;&#10;models.py: закомментировала все поля" />
     <MESSAGE value="добавлено апи для сохранения модели Data.&#10;добавлено апи для получения id последней сохраненной Data." />
-    <option name="LAST_COMMIT_MESSAGE" value="добавлено апи для сохранения модели Data.&#10;добавлено апи для получения id последней сохраненной Data." />
+    <MESSAGE value="попытка заигнорить идеевскую хрень" />
+    <MESSAGE value="добавлена потеряная миграция" />
+    <option name="LAST_COMMIT_MESSAGE" value="добавлена потеряная миграция" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -798,7 +819,7 @@
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="75">
-          <caret line="5" column="6" lean-forward="false" selection-start-line="5" selection-start-column="6" selection-end-line="5" selection-end-column="6" />
+          <caret line="5" column="5" lean-forward="false" selection-start-line="5" selection-start-column="5" selection-end-line="5" selection-end-column="5" />
           <folding />
         </state>
       </provider>
