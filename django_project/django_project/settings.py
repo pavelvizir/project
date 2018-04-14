@@ -20,24 +20,32 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
+
 SECRET_KEY = '(pn+ovc%p#am)wh+5+k)&e)l_yi_=26i&@h4x=5u3v6&u3fy9a'
+
+#SECRET_KEY = 'b1!&@n*88vutlbn(9u*^v_yu=p7#*(yoirk1j@cty^+7&^lc(&'
+
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
 
 INSTALLED_APPS = [
     'mainapp.apps.MainappConfig',
+    'main'
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'main',
+    'bootstrap3',
+
 ]
 
 MIDDLEWARE = [
@@ -126,3 +134,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = None
