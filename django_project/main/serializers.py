@@ -10,7 +10,7 @@ class DataSerializer(serializers.ModelSerializer):
                   'PID',
                   'CID',
                   'psource',
-                  'type',
+                  'typedoc',
                   'metadata',
                   'data_main',
                   'additional_data',
