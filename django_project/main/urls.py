@@ -12,5 +12,6 @@ urlpatterns = [
     url(r'^data/$', views.index_data, name='index_data'),
     url('api/', MyView.as_view(), name='my-view'),
     path('', views.create, name='create'),
-    path('last', views.get_last_id, name='get_last_id')
+    path('last', views.get_last_id, name='get_last_id'),
+    path('test_search', views.test_search, name='test_search')
 ]

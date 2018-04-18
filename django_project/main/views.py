@@ -1,4 +1,3 @@
-
 from django.db.models import Max
 
 from django.views.decorators.csrf import csrf_exempt
@@ -15,9 +14,34 @@ from django.http import HttpResponse, JsonResponse, Http404, HttpResponseRedirec
 from django.template import RequestContext, loader
 from django.views import View
 
-
 from main.models import *
 
+from django.contrib.postgres.search import SearchVector
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+
+@csrf_exempt
+@api_view(['POST'])
+def create(request):
+    data = JSONParser().parse(request)
+    serializer = DataSerializer(data=data)  # конструктор с именоваными параметр
+    if serializer.is_valid():
+        serializer.save()
+        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
+    return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_last_id(request):
+    last_id = Data.objects.all().aggregate(Max('id'))
+    return JsonResponse(last_id, status=status.HTTP_200_OK)
+
+@csrf_exempt
+@api_view(['GET'])
+def test_search(request):
+    SW = 'text'
+    res = Data.objects.filter(typedoc__search=SW)
+    return HttpResponse(res, status=status.HTTP_200_OK)
 
 def index(request):
     # pass
@@ -27,7 +51,6 @@ def index(request):
         'latest_documents_list': latest_documents_list
     }
     return HttpResponse(template.render(context))
-    return HttpResponse("Hello, world. You're at the polls index.")
 
 
 def detail(request, id):
@@ -70,7 +93,6 @@ class MyView(View):
     def get(self, request, *args, **kwargs):
         return JsonResponse({'UID': 0})
 
-
     def post(self, request):
         # print('Raw Data: "%s"' % request.body)
         new_emails = json.loads(request.body.decode())
@@ -87,58 +109,3 @@ class MyView(View):
                                   attachment['MIME']))
         return HttpResponse("OK")
 
-
-      
-@csrf_exempt
-@api_view(['POST'])
-def create(request):
-    data = JSONParser().parse(request)
-    serializer = DataSerializer(data=data)  #конструктор с именоваными параметр
-    if serializer.is_valid():
-        serializer.save()
-        return JsonResponse(serializer.data, status=status.HTTP_201_CREATED)
-    return JsonResponse(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@csrf_exempt
-@api_view(['GET'])
-def get_last_id(request):
-    last_id = Data.objects.all().aggregate(Max('id'))
-    return JsonResponse(last_id, status=status.HTTP_200_OK)
-  
-  
-    # def save_events_json(request):
-    #     if request.is_ajax():
-    #         if request.method == 'POST':
-    #             print
-    #             'Raw Data: "%s"' % request.body
-    #     return HttpResponse("OK")
-
-
-    # def api(self, request):
-        # ''' Returns 0 for GET, receives and displays emails for POST.'''
-
-        # if request.method == 'GET':
-        # return JsonResponse([0, ])
-
-        # # Достаём темы и сложения, чтобы продемонстрировать рпишедший json.
-        # new_emails = request.get_json(force=True)
-        # for new_email in new_emails:
-        #     print("\n\tI've got the email with the following subject:\n\n\t\t{}\n"
-        #           .format(new_email['metadata']["Subject"].upper()))
-        #     if new_email['attachments']:
-        #         print('\t\tAttachments:\n')
-        #         for attachment in new_email['attachments']:
-        #             print('\t\t\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'
-        #                   .format(attachment['filename'],
-        #                           len(attachment['body']),
-        #                           attachment['MIME']))
-
-        # # Flask требует возвращать response на POST в правильном формате.
-        # resp = make_response('preved', 200)
-        # resp.headers['X-Something'] = 'A value'
-        # return resp
-
-
-    # def post(self, request, *args, **kwargs):
-    #     return HttpResponse('Hello, World!')
