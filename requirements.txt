@@ -1,6 +1,7 @@
 Django 
 pyzmq
-django-bootstrap3
+django-bootstrap3 
 django.contrib.postgres
 djangorestframework==3.8.2
 django.core.urlresolvers
+ 
