@@ -1,6 +1,6 @@
 [{
   "fields": {
-	"data_main":"ываыва",
+	"data_main": "weewe",
 	"typedoc":"gtrgrt",
 	"additional_data":"asss",
 	"CID":1,
@@ -24,3 +24,18 @@
   "model": "main.Data",
   "pk": 2
 }]
+[{
+  "fields": {
+	"data_main": "cheese this is main data",
+	"typedoc":"gtrgrt",
+	"additional_data":"cheese cake lovely grooome",
+	"CID":3,
+	"PID":3,
+	"metadata":"mails",
+	"psource":"sms"
+},
+  "model": "main.Data",
+  "pk": 3
+},
+
+
