@@ -14,8 +14,8 @@ class Data(models.Model):
     csource = models.CharField(max_length=500)  # @example.com, +7(999)453-..., и тд
     typedoc = models.CharField(max_length=100)  # тип документа предоставляет парсер
     metadata = models.TextField()  # в исходном коде письма содержатся заголовки, адреса
-    data_main = models.TextField()  # plain text
-    additional_data = models.TextField()  # html, если есть
+    data_main = models.TextField(null=True)  # plain text
+    additional_data = models.TextField(null=True)  # html, если есть
     link = models.CharField(max_length=500, null=True)
     search_vector = SearchVectorField(null=True)
 

@@ -93,19 +93,47 @@ class MyView(View):
     def get(self, request, *args, **kwargs):
         return JsonResponse({'UID': 0})
 
-    def post(self, request):
-        # print('Raw Data: "%s"' % request.body)
-        new_emails = json.loads(request.body.decode())
-        for new_email in new_emails:
-            # print(new_email)
-            print("\n\tI've got the email with the following subject:\n\n\t\t{}\n"
-                  .format(new_email['metadata']["Subject"].upper()))
-            if new_email['attachments']:
-                print('\t\tAttachments:\n')
-                for attachment in new_email['attachments']:
-                    print('\t\t\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'
-                          .format(attachment['filename'],
-                                  len(attachment['body']),
-                                  attachment['MIME']))
-        return HttpResponse("OK")
+    # def post(self, request):
+    #     # print('Raw Data: "%s"' % request.body)
+    #     new_emails = json.loads(request.body.decode())
+    #     for new_email in new_emails:
+    #         # print(new_email)
+    #         print("\n\tI've got the email with the following subject:\n\n\t\t{}\n"
+    #               .format(new_email['metadata']["Subject"].upper()))
+    #         if new_email['attachments']:
+    #             print('\t\tAttachments:\n')
+    #             for attachment in new_email['attachments']:
+    #                 print('\t\t\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'
+    #                       .format(attachment['filename'],
+    #                               len(attachment['body']),
+    #                               attachment['MIME']))
+    #     return HttpResponse("OK")
 
+    def post(self, request):
+       # print('Raw Data: "%s"' % request.body)
+       new_emails = json.loads(request.body.decode())
+       for new_email in new_emails:
+           html_data = new_email['html'] if new_email['html'] else 'Nothing'
+           add_data = new_email['plain'] if new_email['plain'] else 'Nothing'
+           mail1 = Data(
+                   PID= 0,
+                   CID = 0,
+                   psource = 'imap',
+                   csource = 'mail',
+                   typedoc = 'mail',
+                   metadata = new_email['metadata']['Subject'],
+                   data_main = html_data,
+                   additional_data = add_data,
+                   link = 'link')
+           mail1.save()
+
+           print("\n\tI've got the email with the following subject:\n\n\t\t{}\n"
+                 .format(new_email['metadata']["Subject"].upper()))
+           if new_email['attachments']:
+               print('\t\tAttachments:\n')
+               for attachment in new_email['attachments']:
+                   print('\t\t\t[Filename]: {:<30} [Size]: {:<10} [MIME]: {:<8}\n'
+                         .format(attachment['filename'],
+                                 len(attachment['body']),
+                                 attachment['MIME']))
+       return HttpResponse("OK")
