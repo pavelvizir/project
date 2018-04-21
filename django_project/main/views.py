@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, serializers
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
-from django.contrib.postgres.search import SearchVector
+from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 from main.serializers import DataSerializer
 
 import json
@@ -41,12 +41,15 @@ def full_text_search(request):   #Функция поиска
     :param request: localhost:8000/main/search?search=text
     :return: [{"id": 2, "PID": 2, "CID": 2, "psource": "gmail", "typedoc": "text", "metadata": "text,im", "data_main": "qwqwqwq", "additional_data": "asss", "link": null}]
     '''
-
+    res = Data.objects.filter()
     search_term = request.GET.get('search', '')
-    res = Data.objects.filter(typedoc__search=search_term)
-    #res = Data.objects.annotate(
-       # search = SearchVector('main_data', 'typedoc'),
-       # ).filter(search=search_term)
+    #res = Data.objects.filter(typedoc__search=search_term)
+    query = SearchQuery(search_term)
+    title_vector = SearchVector('metadata', weight='A')
+    content_vector = SearchVector('typedoc', weight='B')
+    vectors = title_vector + content_vector
+    res = res.annotate(search=vectors).filter(search=query)
+    res = res.annotate(rank=SearchRank(vectors, query)).order_by('-rank')
 
 
     serializer = DataSerializer(res, many=True)
