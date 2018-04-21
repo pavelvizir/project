@@ -1,24 +1,32 @@
-from django.test import TestCase
+from django.test import TestCase, TransactionTestCase
 
 # Create your tests here.
 
 from rest_framework.test import APIClient
 from rest_framework import status
-from django.core.urlresolvers import reverse
 
 # Define this after the ModelTestCase
-class ViewTestCase(TestCase):
+from main.models import Data
+
+
+class testPostgresFullTextSearch(TransactionTestCase):
+    #fixtures = ['Data.json']
     """Test suite for the api views."""
 
     def setUp(self):
         """Define the test client and other test variables."""
+        Data.objects.create(PID=1,
+                            CID=1,
+                            psource="text",
+                            csource="text",
+                            typedoc="text",
+                            metadata="text",
+                            data_main="text",
+                            additional_data="text")
         self.client = APIClient()
-        self.data_data = {'data_main': 'Go to Ibiza'}
-        self.response = self.client.post(
-            reverse('create'),
-            self.data_data,
-            format="json")
 
-    def test_api_can_create_a_bucketlist(self):
-        """Test the api has bucket creation capability."""
-        self.assertEqual(self.response.status_code, status.HTTP_201_CREATED)
+    def test_fulltextsearch(self):
+        response = self.client.get("/main/search?search=text")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        #TODO распасить и проверить response.content
+

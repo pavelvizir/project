@@ -1,7 +1,7 @@
 from django.db.models import Max
 
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import status
+from rest_framework import status, serializers
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 
@@ -15,9 +15,6 @@ from django.template import RequestContext, loader
 from django.views import View
 
 from main.models import *
-
-from django.contrib.postgres.search import SearchVector
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
 
 @csrf_exempt
 @api_view(['POST'])
@@ -38,10 +35,11 @@ def get_last_id(request):
 
 @csrf_exempt
 @api_view(['GET'])
-def test_search(request):
-    SW = 'text'
-    res = Data.objects.filter(typedoc__search=SW)
-    return HttpResponse(res, status=status.HTTP_200_OK)
+def full_text_search(request):   #Функция поиска
+    search_term = request.GET.get('search', '')
+    res = Data.objects.filter(typedoc__search=search_term)
+    serializer = DataSerializer(res, many=True)
+    return JsonResponse(serializer.data, safe=False)
 
 def index(request):
     # pass
