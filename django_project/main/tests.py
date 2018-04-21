@@ -1,11 +1,17 @@
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase
 
 # Create your tests here.
 
 from rest_framework.test import APIClient
 from rest_framework import status
+from django.core.urlresolvers import reverse
 
 # Define this after the ModelTestCase
+from main.models import Data
+
+
+class testPostgresFullTextSearch(TransactionTestCase):
+    fixtures = ['Data.json']
 from main.models import Data
 
 

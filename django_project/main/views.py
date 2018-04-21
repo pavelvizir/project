@@ -41,7 +41,7 @@ def full_text_search(request):   #Функция поиска
     :param request: localhost:8000/main/search?search=text
     :return: [{"id": 2, "PID": 2, "CID": 2, "psource": "gmail", "typedoc": "text", "metadata": "text,im", "data_main": "qwqwqwq", "additional_data": "asss", "link": null}]
     '''
-    
+
     search_term = request.GET.get('search', '')
     res = Data.objects.filter(typedoc__search=search_term)
     #res = Data.objects.annotate(
