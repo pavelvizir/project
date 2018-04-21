@@ -10,11 +10,11 @@ from main.models import Data
 
 
 class testPostgresFullTextSearch(TransactionTestCase):
-    #fixtures = ['Data.json']
+    fixtures = ['Data.json']
     """Test suite for the api views."""
 
     def setUp(self):
-        """Define the test client and other test variables."""
+        """Define the test client and other test variables.
         Data.objects.create(PID=1,
                             CID=1,
                             psource="text",
@@ -25,8 +25,9 @@ class testPostgresFullTextSearch(TransactionTestCase):
                             additional_data="text")
         self.client = APIClient()
 
+    """
     def test_fulltextsearch(self):
         response = self.client.get("/main/search?search=text")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        #TODO распасить и проверить response.content
+    #TODO распасить и проверить response.content
 

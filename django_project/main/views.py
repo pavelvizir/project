@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status, serializers
 from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
-
+from django.contrib.postgres.search import SearchVector
 from main.serializers import DataSerializer
 
 import json
@@ -36,8 +36,19 @@ def get_last_id(request):
 @csrf_exempt
 @api_view(['GET'])
 def full_text_search(request):   #Функция поиска
+    '''
+
+    :param request: localhost:8000/main/search?search=text
+    :return: [{"id": 2, "PID": 2, "CID": 2, "psource": "gmail", "typedoc": "text", "metadata": "text,im", "data_main": "qwqwqwq", "additional_data": "asss", "link": null}]
+    '''
+    
     search_term = request.GET.get('search', '')
     res = Data.objects.filter(typedoc__search=search_term)
+    #res = Data.objects.annotate(
+       # search = SearchVector('main_data', 'typedoc'),
+       # ).filter(search=search_term)
+
+
     serializer = DataSerializer(res, many=True)
     return JsonResponse(serializer.data, safe=False)
 
@@ -59,14 +70,6 @@ def detail(request, id):
     return render(request, 'polls/detail.html', {'data': data})
 
 
-# def detail2(request, document_id):
-#     try:
-#         document = get_object_or_404(Document, pk=document_id)
-#     except Document.DoesNotExist:
-#         raise Http404("Document does not exist!")
-#     return render(request, 'polls/detail.html', {'document': document})
-
-
 def index_data(request):
     latest_documents_list = Data.objects.order_by('PID')
     template = loader.get_template('polls/index_data.html')
@@ -76,14 +79,6 @@ def index_data(request):
     return HttpResponse(template.render(context))
     # return HttpResponse("Hello, world. You're at the polls index.")
 
-
-# def results(request, ID):
-#     response = "You're looking at the results of question %s."
-#     return HttpResponse(response % id)
-
-
-# def vote(request, document_id):
-#     return HttpResponse("You're voting on question %s." % document_id)
 
 
 @method_decorator(csrf_exempt, name='dispatch')
