@@ -51,7 +51,7 @@
   <div class="container">
     <ul class="list-group">
       {% for data in latest_documents_list %}
-        <li class="list-group-item"><a href="/main/data/{{ data.id }}/">{{ data.Metadata }}</a></li>
+        <li class="list-group-item"><a href="/main/data/{{ data.id }}/">{{ data.metadata }}</a></li>
       {% endfor %}
     </ul>
   {% else %}
