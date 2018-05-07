@@ -14,7 +14,7 @@ def api():
     if request.method == 'GET':
         return json.dumps([0, ])
 
-    # Достаём темы и сложения, чтобы продемонстрировать рпишедший json.
+    # Достаём темы и сложения, чтобы продемонстрировать пришедший json.
     new_emails = request.get_json(force=True)
     for new_email in new_emails:
         print("\n\tI've got the email with the following subject:\n\n\t\t{}\n"
