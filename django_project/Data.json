@@ -1,0 +1,34 @@
+[
+{
+    "model": "main.data",
+    "pk": 1,
+    "fields": {
+        "PID": 1,
+        "CID": 1,
+        "psource": "gmail",
+        "csource": "",
+        "typedoc": "gtrgrt",
+        "metadata": "sfds",
+        "data_main": "weewe",
+        "additional_data": "asss",
+        "link": null,
+        "search_vector": null
+    }
+},
+{
+    "model": "main.data",
+    "pk": 2,
+    "fields": {
+        "PID": 2,
+        "CID": 2,
+        "psource": "gmail",
+        "csource": "",
+        "typedoc": "text",
+        "metadata": "text,im",
+        "data_main": "qwqwqwq",
+        "additional_data": "asss",
+        "link": null,
+        "search_vector": null
+    }
+}
+]

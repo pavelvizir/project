@@ -6,7 +6,8 @@
 	"CID":1,
 	"PID":1,
 	"metadata":"sfds",
-	"psource":"gmail"
+	"psource":"gmail",
+    "csource": "image"
 },
   "model": "main.Data",
   "pk": 1
@@ -19,23 +20,26 @@
 	"CID":2,
 	"PID":2,
 	"metadata":"text,im",
-	"psource":"gmail"
+	"psource":"gmail",
+    "csource": "image"
 },
   "model": "main.Data",
   "pk": 2
-}]
-[{
+},
+	{
   "fields": {
 	"data_main": "cheese this is main data",
 	"typedoc":"gtrgrt",
-	"additional_data":"cheese cake lovely grooome",
+	"additional_data": "cheese cake lovely grooome",
 	"CID":3,
 	"PID":3,
 	"metadata":"mails",
-	"psource":"sms"
+	"psource":"sms",
+    "csource": "image"
 },
   "model": "main.Data",
   "pk": 3
-},
+}
+]
 
 
